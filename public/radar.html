@@ -162,6 +162,7 @@ let currentDistance = 0;
 let sweepDirection = "→";
 let dataBuffer = "";
 
+const MAX_RANGE = 200;
 const detections = new Array(181).fill(0);
 const fadeTrail = new Array(181).fill(0);
 
@@ -262,8 +263,8 @@ function parseData(chunk) {
 
     document.getElementById("angleVal").textContent = angle + "°";
     document.getElementById("distVal").textContent = distance + " cm";
-    document.getElementById("objVal").textContent = distance < 40 ? "DETECTED" : "Clear";
-    document.getElementById("objVal").className = distance < 40 ? "info-value warning" : "info-value";
+    document.getElementById("objVal").textContent = distance < MAX_RANGE ? "DETECTED" : "Clear";
+    document.getElementById("objVal").className = distance < MAX_RANGE ? "info-value warning" : "info-value";
     document.getElementById("sweepVal").textContent = sweepDirection;
   }
 }
@@ -300,7 +301,7 @@ function drawRadar() {
   ctx.textAlign = "center";
   for (let i = 1; i <= 4; i++) {
     const r = (maxR / 4) * i;
-    ctx.fillText((i * 10) + "cm", cx + r + 2, cy + 14);
+    ctx.fillText((i * (MAX_RANGE / 4)) + "cm", cx + r + 2, cy + 14);
   }
 
   // Angle lines
@@ -336,12 +337,12 @@ function drawRadar() {
   // Detected objects (red dots)
   for (let a = 0; a < 181; a++) {
     const d = detections[a];
-    if (d <= 0 || d >= 40) continue;
+    if (d <= 0 || d >= MAX_RANGE) continue;
     if (fadeTrail[a] <= 10) continue;
 
     const alpha = fadeTrail[a] / 255;
     const rad = a * Math.PI / 180;
-    const r = (d / 40) * maxR;
+    const r = (d / MAX_RANGE) * maxR;
     const ox = cx + r * Math.cos(Math.PI - rad);
     const oy = cy - r * Math.sin(rad);
 
