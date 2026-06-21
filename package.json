@@ -25,21 +25,25 @@
       {
         "from": "tools",
         "to": "tools",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
-      "target": ["portable"],
+      "target": [
+        "portable"
+      ],
       "icon": "public/favicon.ico"
     }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
-    "express": "^4.21.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
   },
   "devDependencies": {
-    "electron": "^35.0.0",
-    "electron-builder": "^26.0.0"
+    "electron": "^35.7.5",
+    "electron-builder": "^26.15.3"
   }
 }

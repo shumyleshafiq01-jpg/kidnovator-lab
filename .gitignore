@@ -3,3 +3,5 @@ node_modules/
 tools/
 temp_sketch/
 test_sketch/
+
+.vercel

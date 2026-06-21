@@ -72,7 +72,7 @@ if (!hasApi) {
 const DEMO_PROJECTS = {
   default: {
     title: "Automatic Night Light",
-    code: `// Automatic Night Light - AI and Robotics for Kids Kit
+    code: `// Automatic Night Light - Robotics for Kids Kit
 // Uses LDR sensor to detect darkness and turn on LED
 
 int ldrPin = A0;    // LDR sensor connected to analog pin A0
@@ -115,7 +115,7 @@ void loop() {
   },
   parking: {
     title: "Smart Parking Sensor with Buzzer",
-    code: `// Smart Parking Sensor - AI and Robotics for Kids Kit
+    code: `// Smart Parking Sensor - Robotics for Kids Kit
 // Buzzer beeps faster as object gets closer
 
 int trigPin = 2;
@@ -179,7 +179,7 @@ void loop() {
   },
   water: {
     title: "Water Level Alert System",
-    code: `// Water Level Alert - AI and Robotics for Kids Kit
+    code: `// Water Level Alert - Robotics for Kids Kit
 // LEDs show water level, buzzer warns when high
 
 int waterPin = A1;
@@ -433,7 +433,7 @@ app.get("/api/status", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 const serverInstance = app.listen(PORT, () => {
-  console.log(`AI and Robotics for Kids running at http://localhost:${PORT}`);
+  console.log(`Robotics for Kids running at http://localhost:${PORT}`);
 });
 
 module.exports = serverInstance;

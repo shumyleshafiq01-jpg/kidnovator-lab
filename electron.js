@@ -21,7 +21,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
-    title: "AI and Robotics for Kids",
+    title: "Robotics for Kids",
     icon: path.join(__dirname, "public", "favicon.ico"),
     webPreferences: {
       nodeIntegration: false,
