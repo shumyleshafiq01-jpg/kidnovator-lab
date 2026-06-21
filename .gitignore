@@ -1,0 +1,5 @@
+node_modules/
+.env
+tools/
+temp_sketch/
+test_sketch/

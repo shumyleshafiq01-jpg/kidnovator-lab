@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kidnovator Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --orange: #FF6B2B;
+      --orange-light: #FF8F5E;
+      --orange-bg: #FFF7ED;
+      --navy: #1B2A4A;
+      --navy-light: #243660;
+      --teal: #00BFA6;
+      --teal-light: #00E4C7;
+      --teal-bg: #F0FDFA;
+      --white: #FFFFFF;
+      --g50: #F8FAFC; --g100: #F1F5F9; --g200: #E2E8F0;
+      --g300: #CBD5E1; --g400: #94A3B8; --g500: #64748B;
+      --g600: #475569; --g700: #334155; --g800: #1E293B;
+      --red: #EF4444; --red-bg: #FEF2F2;
+      --green: #22C55E; --green-bg: #F0FDF4;
+      --yellow: #EAB308; --yellow-bg: #FEFCE8;
+      --blue: #3B82F6;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--g100);
+      color: var(--g800);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      width: 36px; height: 36px;
+      background: var(--orange); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: white; font-weight: 800;
+    }
+
+    header h1 { color: white; font-size: 1.1rem; font-weight: 700; }
+    header h1 span { color: var(--orange-light); }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+
+    .conn-badge {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0.75rem; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 600;
+      background: rgba(255,255,255,0.1); color: var(--g300);
+    }
+    .conn-badge.connected { background: rgba(34,197,94,0.2); color: #86EFAC; }
+    .conn-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--g500);
+    }
+    .conn-badge.connected .conn-dot { background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .btn-connect {
+      background: var(--teal); color: white; border: none;
+      border-radius: 8px; padding: 0.35rem 0.85rem;
+      font-family: 'Poppins', sans-serif; font-size: 0.75rem;
+      font-weight: 600; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-connect:hover { background: var(--teal-light); }
+    .btn-connect.disconnect { background: var(--red); }
+
+    /* ── Dashboard Grid ── */
+    .dashboard {
+      flex: 1; display: grid; overflow: hidden;
+      grid-template-columns: 300px 1fr 320px;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+    }
+
+    /* ── Status Panel (left) ── */
+    .panel-status {
+      grid-row: 1 / 3; border-right: 1px solid var(--g200);
+      background: var(--white); display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--g500); border-bottom: 1px solid var(--g100);
+      display: flex; align-items: center; gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .device-card {
+      margin: 0.75rem; padding: 0.85rem;
+      background: var(--g50); border: 1px solid var(--g200);
+      border-radius: var(--radius);
+    }
+    .device-card.connected { border-color: var(--teal); background: var(--teal-bg); }
+
+    .device-name {
+      font-weight: 700; font-size: 0.85rem; color: var(--navy);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .device-meta {
+      font-size: 0.72rem; color: var(--g500); margin-top: 0.25rem;
+    }
+
+    .kit-components {
+      padding: 0 0.75rem 0.75rem;
+    }
+
+    .comp-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0.5rem; border-radius: 8px;
+      font-size: 0.78rem; color: var(--g600);
+      transition: background 0.1s;
+    }
+    .comp-item:hover { background: var(--g100); }
+
+    .comp-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .comp-icon.sensor { background: var(--teal-bg); }
+    .comp-icon.output { background: var(--orange-bg); }
+    .comp-icon.power { background: var(--yellow-bg); }
+    .comp-icon.brain { background: #EDE9FE; }
+
+    .comp-label { font-weight: 500; }
+    .comp-pin { margin-left: auto; font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--g400); }
+
+    .active-pins-title {
+      padding: 0.75rem 1rem 0.25rem;
+      font-size: 0.7rem; font-weight: 600; color: var(--g400);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .active-pins {
+      display: flex; flex-wrap: wrap; gap: 0.3rem;
+      padding: 0.25rem 0.75rem 0.75rem;
+    }
+    .pin-chip {
+      font-family: 'Fira Code', monospace; font-size: 0.65rem;
+      padding: 0.2rem 0.5rem; border-radius: 6px;
+      background: var(--g100); color: var(--g600);
+      border: 1px solid var(--g200);
+    }
+    .pin-chip.active { background: var(--teal-bg); color: var(--teal); border-color: var(--teal); font-weight: 600; }
+
+    /* ── Code Generator (center) ── */
+    .panel-main {
+      grid-row: 1 / 3; display: flex; flex-direction: column;
+      overflow: hidden; background: var(--g50);
+    }
+
+    .prompt-bar {
+      padding: 0.85rem 1rem; background: var(--white);
+      border-bottom: 1px solid var(--g200); flex-shrink: 0;
+    }
+
+    .prompt-input-row {
+      display: flex; gap: 0.5rem;
+    }
+
+    .prompt-input-row textarea {
+      flex: 1; border: 2px solid var(--g200); border-radius: 10px;
+      padding: 0.65rem 0.85rem; font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem; resize: none; outline: none;
+      min-height: 42px; max-height: 100px;
+    }
+    .prompt-input-row textarea:focus { border-color: var(--teal); }
+
+    .btn-gen {
+      background: linear-gradient(135deg, var(--orange), var(--orange-light));
+      color: white; border: none; border-radius: 10px;
+      padding: 0 1.25rem; font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.1s; white-space: nowrap;
+    }
+    .btn-gen:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn-gen:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .quick-row {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem;
+    }
+    .qbtn {
+      background: var(--g100); border: 1px solid var(--g200);
+      border-radius: 16px; padding: 0.25rem 0.7rem;
+      font-family: 'Poppins', sans-serif; font-size: 0.7rem;
+      color: var(--g600); cursor: pointer; transition: all 0.12s;
+    }
+    .qbtn:hover { background: var(--teal); color: white; border-color: var(--teal); }
+
+    .code-area {
+      flex: 1; overflow-y: auto; padding: 1rem;
+    }
+
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; color: var(--g400); text-align: center;
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .empty-state p { font-size: 0.85rem; max-width: 300px; line-height: 1.6; }
+
+    .loading-state {
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center; height: 100%;
+    }
+    .loading-state.visible { display: flex; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--g200); border-top-color: var(--orange);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p { color: var(--g500); font-size: 0.85rem; }
+
+    .result-card { display: none; }
+    .result-card.visible { display: block; }
+
+    .result-title {
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      color: white; padding: 0.75rem 1rem; border-radius: var(--radius) var(--radius) 0 0;
+      font-weight: 700; font-size: 0.95rem;
+    }
+
+    .code-block {
+      background: var(--g800); border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+    }
+    .code-toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.5rem 0.85rem; background: var(--navy);
+      font-size: 0.72rem; color: var(--g400);
+    }
+    .btn-copy {
+      background: var(--orange); color: white; border: none;
+      border-radius: 6px; padding: 0.3rem 0.75rem;
+      font-family: 'Poppins', sans-serif; font-size: 0.72rem;
+      font-weight: 600; cursor: pointer;
+    }
+    .btn-copy.copied { background: var(--green); }
+
+    .btn-upload {
+      background: var(--teal); color: white; border: none;
+      border-radius: 6px; padding: 0.3rem 0.75rem;
+      font-family: 'Poppins', sans-serif; font-size: 0.72rem;
+      font-weight: 600; cursor: pointer; margin-left: 0.4rem;
+    }
+    .btn-upload:hover:not(:disabled) { background: var(--teal-light); }
+    .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-upload.uploading { background: var(--yellow); color: var(--g800); }
+    .btn-upload.success { background: var(--green); }
+    .btn-upload.failed { background: var(--red); }
+
+    .upload-status {
+      padding: 0.5rem 0.85rem; font-size: 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: var(--g400);
+    }
+    .upload-status.success { color: #86EFAC; }
+    .upload-status.error { color: #FCA5A5; }
+
+    pre {
+      margin: 0; padding: 1rem; overflow-x: auto;
+      font-family: 'Fira Code', monospace; font-size: 0.78rem;
+      line-height: 1.6; color: #E2E8F0; max-height: 350px;
+    }
+
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.75rem; margin-top: 0.75rem;
+    }
+
+    .info-card {
+      background: var(--white); border: 1px solid var(--g200);
+      border-radius: var(--radius); padding: 0.85rem;
+    }
+    .info-card h4 {
+      font-size: 0.75rem; font-weight: 700; color: var(--navy);
+      margin-bottom: 0.4rem; text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .info-card p, .info-card li {
+      font-size: 0.78rem; color: var(--g600); line-height: 1.6;
+    }
+    .info-card ul { list-style: none; padding: 0; }
+    .info-card ul li { padding: 0.2rem 0; padding-left: 1rem; position: relative; }
+    .info-card ul li::before {
+      content: ''; position: absolute; left: 0; top: 0.55rem;
+      width: 6px; height: 6px; background: var(--teal); border-radius: 50%;
+    }
+    .info-card.full { grid-column: 1 / -1; }
+
+    .pins-row {
+      display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.3rem;
+    }
+    .pin-tag {
+      font-family: 'Fira Code', monospace; font-size: 0.7rem;
+      background: var(--orange-bg); color: var(--orange);
+      padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600;
+    }
+
+    .error-banner {
+      background: var(--red-bg); border: 1px solid #FECACA;
+      border-radius: var(--radius); padding: 0.75rem 1rem;
+      color: var(--red); font-size: 0.82rem; display: none;
+    }
+    .error-banner.visible { display: block; }
+
+    /* ── Chat Panel (right) ── */
+    .panel-chat {
+      grid-row: 1 / 3; border-left: 1px solid var(--g200);
+      background: var(--white); display: flex; flex-direction: column;
+    }
+
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+
+    .chat-msg {
+      max-width: 90%; padding: 0.6rem 0.85rem;
+      border-radius: 12px; font-size: 0.78rem; line-height: 1.6;
+    }
+    .chat-msg.user {
+      background: var(--orange); color: white;
+      align-self: flex-end; border-bottom-right-radius: 4px;
+    }
+    .chat-msg.bot {
+      background: var(--g100); color: var(--g700);
+      align-self: flex-start; border-bottom-left-radius: 4px;
+    }
+    .chat-msg.system {
+      background: var(--teal-bg); color: var(--teal);
+      align-self: center; text-align: center; font-size: 0.72rem;
+      padding: 0.4rem 0.75rem;
+    }
+
+    .chat-input-row {
+      padding: 0.65rem; border-top: 1px solid var(--g100);
+      display: flex; gap: 0.4rem; flex-shrink: 0;
+    }
+    .chat-input-row input {
+      flex: 1; border: 1px solid var(--g200); border-radius: 8px;
+      padding: 0.5rem 0.75rem; font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem; outline: none;
+    }
+    .chat-input-row input:focus { border-color: var(--teal); }
+    .btn-send {
+      background: var(--teal); color: white; border: none;
+      border-radius: 8px; padding: 0 0.85rem;
+      font-family: 'Poppins', sans-serif; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer;
+    }
+
+    /* ── Serial Monitor (bottom of chat) ── */
+    .serial-section {
+      border-top: 1px solid var(--g200); flex-shrink: 0;
+    }
+    .serial-header {
+      padding: 0.4rem 0.75rem; background: var(--g50);
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+    }
+    .serial-header span { font-size: 0.72rem; font-weight: 600; color: var(--g500); text-transform: uppercase; }
+    .serial-body { display: none; }
+    .serial-body.open { display: block; }
+    .serial-output {
+      height: 120px; overflow-y: auto; padding: 0.5rem;
+      font-family: 'Fira Code', monospace; font-size: 0.7rem;
+      background: var(--g800); color: #86EFAC; line-height: 1.5;
+    }
+    .serial-input-row {
+      display: flex; gap: 0.3rem; padding: 0.4rem;
+      background: var(--g50);
+    }
+    .serial-input-row input {
+      flex: 1; border: 1px solid var(--g200); border-radius: 6px;
+      padding: 0.3rem 0.5rem; font-family: 'Fira Code', monospace;
+      font-size: 0.72rem; outline: none;
+    }
+    .serial-input-row button {
+      background: var(--navy); color: white; border: none;
+      border-radius: 6px; padding: 0.3rem 0.6rem;
+      font-size: 0.7rem; font-weight: 600; cursor: pointer;
+    }
+
+    .syntax-keyword { color: #93C5FD; }
+    .syntax-type { color: #A78BFA; }
+    .syntax-number { color: #FCD34D; }
+    .syntax-string { color: #86EFAC; }
+    .syntax-comment { color: #64748B; font-style: italic; }
+    .syntax-function { color: #67E8F9; }
+    .syntax-preprocessor { color: #F472B6; }
+
+    .powered-by {
+      position: fixed; bottom: 8px; right: 12px;
+      font-size: 0.65rem; color: var(--g400);
+      z-index: 20; display: flex; align-items: center; gap: 0.3rem;
+    }
+    .powered-by a {
+      color: var(--teal); text-decoration: none; font-weight: 600;
+    }
+    .powered-by a:hover { text-decoration: underline; }
+
+    @media (max-width: 900px) {
+      .dashboard { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+      .panel-status, .panel-chat { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">K</div>
+  <div>
+    <h1>Kidnovator <span>Lab</span></h1>
+  </div>
+  <div class="header-right">
+    <div class="conn-badge" id="connBadge">
+      <div class="conn-dot"></div>
+      <span id="connLabel">No device</span>
+    </div>
+    <button class="btn-connect" id="connectBtn" onclick="toggleConnection()">Connect Arduino</button>
+  </div>
+</header>
+
+<div class="dashboard">
+
+  <!-- ── LEFT: Status Panel ── -->
+  <div class="panel-status">
+    <div class="panel-title">Device & Components</div>
+
+    <div class="device-card" id="deviceCard">
+      <div class="device-name">
+        <span id="deviceIcon">&#9675;</span>
+        <span id="deviceName">No Arduino connected</span>
+      </div>
+      <div class="device-meta" id="deviceMeta">Click "Connect Arduino" to detect board</div>
+    </div>
+
+    <div class="panel-title">Kit Components</div>
+    <div class="kit-components">
+      <div class="comp-item"><div class="comp-icon brain">&#9881;</div><span class="comp-label">Arduino Uno</span><span class="comp-pin">Brain</span></div>
+      <div class="comp-item"><div class="comp-icon sensor">&#9788;</div><span class="comp-label">LDR Light Sensor</span><span class="comp-pin">A0</span></div>
+      <div class="comp-item"><div class="comp-icon sensor">&#9178;</div><span class="comp-label">Ultrasonic Sensor</span><span class="comp-pin">D2-D3</span></div>
+      <div class="comp-item"><div class="comp-icon sensor">&#9748;</div><span class="comp-label">Water Level Sensor</span><span class="comp-pin">A1</span></div>
+      <div class="comp-item"><div class="comp-icon output">&#9728;</div><span class="comp-label">LED Red</span><span class="comp-pin">D4</span></div>
+      <div class="comp-item"><div class="comp-icon output">&#9728;</div><span class="comp-label">LED Green</span><span class="comp-pin">D5</span></div>
+      <div class="comp-item"><div class="comp-icon output">&#9728;</div><span class="comp-label">LED Yellow</span><span class="comp-pin">D6</span></div>
+      <div class="comp-item"><div class="comp-icon output">&#9835;</div><span class="comp-label">Buzzer</span><span class="comp-pin">D7</span></div>
+      <div class="comp-item"><div class="comp-icon output">&#8635;</div><span class="comp-label">Servo Motor</span><span class="comp-pin">D9</span></div>
+      <div class="comp-item"><div class="comp-icon power">&#9889;</div><span class="comp-label">Breadboard</span><span class="comp-pin">--</span></div>
+      <div class="comp-item"><div class="comp-icon power">&#9889;</div><span class="comp-label">9V Battery</span><span class="comp-pin">Vin</span></div>
+    </div>
+
+    <div class="active-pins-title" id="activePinsTitle" style="display:none">Active Pins (from last project)</div>
+    <div class="active-pins" id="activePins"></div>
+  </div>
+
+  <!-- ── CENTER: Code Generator ── -->
+  <div class="panel-main">
+    <div class="prompt-bar">
+      <div class="prompt-input-row">
+        <textarea id="prompt" placeholder="Describe what you want to build... e.g. 'Turn on LED when it gets dark'" rows="1"></textarea>
+        <button class="btn-gen" id="genBtn" onclick="generate()">Generate</button>
+      </div>
+      <div class="quick-row">
+        <button class="qbtn" onclick="useQ(this)">Auto night light with LDR</button>
+        <button class="qbtn" onclick="useQ(this)">Parking sensor with buzzer</button>
+        <button class="qbtn" onclick="useQ(this)">Water level alert</button>
+        <button class="qbtn" onclick="useQ(this)">Auto door with servo</button>
+        <button class="qbtn" onclick="useQ(this)">Traffic light sequence</button>
+        <button class="qbtn" onclick="useQ(this)">Rain detector alarm</button>
+      </div>
+    </div>
+
+    <div class="code-area">
+      <div class="error-banner" id="error"></div>
+
+      <div class="loading-state" id="loading">
+        <div class="spinner"></div>
+        <p>Generating Arduino code...</p>
+      </div>
+
+      <div class="empty-state" id="emptyState">
+        <div class="icon">&#9881;</div>
+        <p><strong>Describe your project above</strong><br>
+        Tell me what you want to build and I'll generate the Arduino code, wiring guide, and explanation.</p>
+      </div>
+
+      <div class="result-card" id="result">
+        <div class="result-title" id="projectTitle">Your Project</div>
+        <div class="code-block">
+          <div class="code-toolbar">
+            <span>Arduino Sketch (.ino)</span>
+            <button class="btn-copy" id="copyBtn" onclick="copyCode()">Copy</button>
+            <button class="btn-upload" id="uploadBtn" onclick="uploadCode()">Upload to Arduino</button>
+          </div>
+          <pre><code id="codeOutput"></code></pre>
+          <div class="upload-status" id="uploadStatus" style="display:none"></div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <h4>Wiring Guide</h4>
+            <ul id="wiringOutput"></ul>
+          </div>
+          <div class="info-card">
+            <h4>Pin Map</h4>
+            <div class="pins-row" id="pinsOutput"></div>
+          </div>
+          <div class="info-card full">
+            <h4>How It Works</h4>
+            <p id="explanationOutput"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Chat + Serial ── -->
+  <div class="panel-chat">
+    <div class="panel-title">Ask a Question</div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg system">Hi! I'm your Arduino tutor. Ask me anything about your kit or project!</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask about wiring, code..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn-send" onclick="sendChat()">Send</button>
+    </div>
+
+    <div class="serial-section">
+      <div class="serial-header" onclick="toggleSerial()">
+        <span>Serial Monitor</span>
+        <span id="serialToggle">&#9660;</span>
+      </div>
+      <div class="serial-body" id="serialBody">
+        <div class="serial-output" id="serialOutput">
+          <div style="color: var(--g500);">Connect Arduino to see serial output...</div>
+        </div>
+        <div class="serial-input-row">
+          <input type="text" id="serialInput" placeholder="Send to Arduino..." onkeydown="if(event.key==='Enter')sendSerial()">
+          <button onclick="sendSerial()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="powered-by">Powered by <a href="https://neurogridlabs.tech" target="_blank">neurogridlabs.tech</a></div>
+
+<script>
+let port = null;
+let reader = null;
+let writer = null;
+let chatHistory = [];
+
+// ── Serial / Connection ──
+async function toggleConnection() {
+  if (port) {
+    await disconnectArduino();
+  } else {
+    await connectArduino();
+  }
+}
+
+async function connectArduino() {
+  if (!('serial' in navigator)) {
+    alert('Web Serial API is not supported in this browser. Please use Chrome or Edge.');
+    return;
+  }
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
+
+    const info = port.getInfo();
+    const vid = info.usbVendorId ? `0x${info.usbVendorId.toString(16).toUpperCase()}` : '?';
+    const pid = info.usbProductId ? `0x${info.usbProductId.toString(16).toUpperCase()}` : '?';
+
+    document.getElementById('connBadge').classList.add('connected');
+    document.getElementById('connLabel').textContent = 'Arduino Connected';
+    document.getElementById('connectBtn').textContent = 'Disconnect';
+    document.getElementById('connectBtn').classList.add('disconnect');
+    document.getElementById('deviceCard').classList.add('connected');
+    document.getElementById('deviceIcon').innerHTML = '&#9679;';
+    document.getElementById('deviceName').textContent = 'Arduino Uno';
+    document.getElementById('deviceMeta').textContent = `USB VID: ${vid} | PID: ${pid} | 9600 baud`;
+
+    writer = port.writable.getWriter();
+    readSerial();
+
+    addSerialLine('Connected to Arduino at 9600 baud');
+  } catch (err) {
+    console.error(err);
+    if (err.name !== 'NotFoundError') {
+      alert('Connection failed: ' + err.message);
+    }
+  }
+}
+
+async function disconnectArduino() {
+  try {
+    if (reader) { await reader.cancel(); reader = null; }
+    if (writer) { writer.releaseLock(); writer = null; }
+    if (port) { await port.close(); port = null; }
+  } catch (e) { console.error(e); }
+
+  document.getElementById('connBadge').classList.remove('connected');
+  document.getElementById('connLabel').textContent = 'No device';
+  document.getElementById('connectBtn').textContent = 'Connect Arduino';
+  document.getElementById('connectBtn').classList.remove('disconnect');
+  document.getElementById('deviceCard').classList.remove('connected');
+  document.getElementById('deviceIcon').innerHTML = '&#9675;';
+  document.getElementById('deviceName').textContent = 'No Arduino connected';
+  document.getElementById('deviceMeta').textContent = 'Click "Connect Arduino" to detect board';
+
+  addSerialLine('Disconnected');
+}
+
+async function readSerial() {
+  const decoder = new TextDecoderStream();
+  const inputDone = port.readable.pipeTo(decoder.writable);
+  const inputStream = decoder.readable;
+  reader = inputStream.getReader();
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value) addSerialLine(value);
+    }
+  } catch (err) {
+    if (err.name !== 'TypeError') console.error(err);
+  }
+}
+
+async function sendSerial() {
+  const input = document.getElementById('serialInput');
+  const text = input.value.trim();
+  if (!text || !writer) return;
+  const encoder = new TextEncoder();
+  await writer.write(encoder.encode(text + '\n'));
+  addSerialLine('> ' + text);
+  input.value = '';
+}
+
+function addSerialLine(text) {
+  const el = document.getElementById('serialOutput');
+  const line = document.createElement('div');
+  line.textContent = text;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function toggleSerial() {
+  const body = document.getElementById('serialBody');
+  const toggle = document.getElementById('serialToggle');
+  body.classList.toggle('open');
+  toggle.innerHTML = body.classList.contains('open') ? '&#9650;' : '&#9660;';
+}
+
+// ── Code Generator ──
+function useQ(btn) {
+  document.getElementById('prompt').value = btn.textContent;
+  document.getElementById('prompt').focus();
+}
+
+async function generate() {
+  const prompt = document.getElementById('prompt').value.trim();
+  if (!prompt) return;
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.textContent = 'Working...';
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('error').classList.remove('visible');
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    document.getElementById('projectTitle').textContent = data.title || 'Your Project';
+    document.getElementById('codeOutput').innerHTML = highlightArduino(data.code || '');
+
+    const wiring = document.getElementById('wiringOutput');
+    wiring.innerHTML = '';
+    (data.wiring || []).forEach(s => { const li = document.createElement('li'); li.textContent = s; wiring.appendChild(li); });
+
+    const pins = document.getElementById('pinsOutput');
+    pins.innerHTML = '';
+    if (data.pins_used) {
+      Object.entries(data.pins_used).forEach(([c, p]) => {
+        const t = document.createElement('span');
+        t.className = 'pin-tag';
+        t.textContent = `${c}: ${p}`;
+        pins.appendChild(t);
+      });
+      updateActivePins(data.pins_used);
+    }
+
+    document.getElementById('explanationOutput').textContent = data.explanation || '';
+    document.getElementById('result').classList.add('visible');
+  } catch (err) {
+    const e = document.getElementById('error');
+    e.textContent = err.message;
+    e.classList.add('visible');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Generate';
+    document.getElementById('loading').classList.remove('visible');
+  }
+}
+
+function updateActivePins(pinsUsed) {
+  const title = document.getElementById('activePinsTitle');
+  const container = document.getElementById('activePins');
+  title.style.display = 'block';
+  container.innerHTML = '';
+  Object.entries(pinsUsed).forEach(([comp, pin]) => {
+    const chip = document.createElement('span');
+    chip.className = 'pin-chip active';
+    chip.textContent = pin;
+    chip.title = comp;
+    container.appendChild(chip);
+  });
+}
+
+function copyCode() {
+  const code = document.getElementById('codeOutput').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Upload to Arduino ──
+async function uploadCode() {
+  const code = document.getElementById('codeOutput').textContent;
+  if (!code) return;
+
+  const btn = document.getElementById('uploadBtn');
+  const status = document.getElementById('uploadStatus');
+
+  // Must disconnect Web Serial first so arduino-cli can access the port
+  if (port) {
+    status.style.display = 'block';
+    status.className = 'upload-status';
+    status.textContent = 'Disconnecting serial to free the port...';
+    await disconnectArduino();
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Detecting board...';
+  btn.className = 'btn-upload uploading';
+  status.style.display = 'block';
+  status.className = 'upload-status';
+  status.textContent = 'Scanning for Arduino...';
+
+  try {
+    // Detect boards
+    const boardRes = await fetch('/api/boards');
+    const boardData = await boardRes.json();
+
+    if (!boardData.boards || boardData.boards.length === 0) {
+      throw new Error('No Arduino detected. Make sure it is plugged in via USB and not locked by another program.');
+    }
+
+    const board = boardData.boards[0];
+    status.textContent = `Found ${board.board} on ${board.port}. Compiling & uploading...`;
+    btn.textContent = 'Uploading...';
+
+    // Upload
+    const uploadRes = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, port: board.port, fqbn: board.fqbn }),
+    });
+    const uploadData = await uploadRes.json();
+
+    if (!uploadRes.ok) throw new Error(uploadData.error);
+
+    btn.textContent = 'Uploaded!';
+    btn.className = 'btn-upload success';
+    status.className = 'upload-status success';
+    status.textContent = uploadData.message + ' — Your Arduino is now running the code!';
+
+    setTimeout(() => {
+      btn.textContent = 'Upload to Arduino';
+      btn.className = 'btn-upload';
+      btn.disabled = false;
+    }, 4000);
+  } catch (err) {
+    btn.textContent = 'Upload Failed';
+    btn.className = 'btn-upload failed';
+    status.className = 'upload-status error';
+    status.textContent = err.message;
+
+    setTimeout(() => {
+      btn.textContent = 'Upload to Arduino';
+      btn.className = 'btn-upload';
+      btn.disabled = false;
+    }, 4000);
+  }
+}
+
+// ── Chat ──
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addChatMsg(msg, 'user');
+  chatHistory.push({ role: 'user', content: msg });
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, history: chatHistory.slice(-10) }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    addChatMsg(data.reply, 'bot');
+    chatHistory.push({ role: 'assistant', content: data.reply });
+  } catch (err) {
+    addChatMsg('Sorry, something went wrong: ' + err.message, 'bot');
+  }
+}
+
+function addChatMsg(text, type) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+// ── Syntax Highlighting ──
+function highlightArduino(code) {
+  let h = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  h = h.replace(/(\/\/.*)/g, '<span class="syntax-comment">$1</span>');
+  h = h.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="syntax-comment">$1</span>');
+  h = h.replace(/(#\w+)/g, '<span class="syntax-preprocessor">$1</span>');
+  h = h.replace(/\b(void|int|long|float|double|char|bool|boolean|byte|unsigned|const|static|return|if|else|for|while|do|switch|case|break|continue|default)\b/g, '<span class="syntax-keyword">$1</span>');
+  h = h.replace(/\b(HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|LED_BUILTIN|true|false|Serial|Servo)\b/g, '<span class="syntax-type">$1</span>');
+  h = h.replace(/\b(pinMode|digitalWrite|digitalRead|analogRead|analogWrite|delay|map|constrain|millis|setup|loop|attach|write|begin|println|print|tone|noTone)\b/g, '<span class="syntax-function">$1</span>');
+  h = h.replace(/\b(\d+)\b/g, '<span class="syntax-number">$1</span>');
+  h = h.replace(/(".*?")/g, '<span class="syntax-string">$1</span>');
+  return h;
+}
+
+// ── Enter key ──
+document.getElementById('prompt').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate(); }
+});
+</script>
+
+</body>
+</html>
