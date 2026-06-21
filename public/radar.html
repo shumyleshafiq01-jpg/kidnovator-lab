@@ -337,11 +337,12 @@ function toggleMotor() {
 }
 
 async function sendCommand(cmd) {
-  if (!writer) return;
+  if (!writer) { console.log("No writer available"); return; }
   try {
     const encoder = new TextEncoder();
     await writer.write(encoder.encode(cmd + "\n"));
-  } catch (e) {}
+    console.log("Sent: " + cmd);
+  } catch (e) { console.error("Send error:", e); }
 }
 
 // ── Serial connection ──
@@ -377,10 +378,10 @@ async function connectArduino() {
 
 async function disconnectArduino() {
   try {
-    if (reader) { await reader.cancel(); reader = null; }
+    if (reader) { await reader.cancel(); reader.releaseLock(); reader = null; }
     if (writer) { writer.releaseLock(); writer = null; }
     if (port) { await port.close(); port = null; }
-  } catch (e) {}
+  } catch (e) { console.error("Disconnect error:", e); }
 
   document.getElementById("status").classList.remove("connected");
   document.getElementById("statusText").textContent = "Disconnected";
@@ -389,18 +390,22 @@ async function disconnectArduino() {
 }
 
 async function readSerial() {
-  const decoder = new TextDecoderStream();
-  port.readable.pipeTo(decoder.writable);
-  reader = decoder.readable.getReader();
+  const textDecoder = new TextDecoder();
+  reader = port.readable.getReader();
 
   try {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      if (value && radarActive) parseData(value);
+      if (value) {
+        const text = textDecoder.decode(value, { stream: true });
+        if (radarActive) parseData(text);
+      }
     }
   } catch (err) {
     if (err.name !== "TypeError") console.error(err);
+  } finally {
+    if (reader) { reader.releaseLock(); reader = null; }
   }
 }
 
