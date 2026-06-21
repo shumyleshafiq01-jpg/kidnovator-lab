@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kidnovator Radar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #62EA44;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1.5rem;
+      background: #111;
+      border-bottom: 1px solid #1a3a1a;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #62EA44;
+    }
+    .title span { color: #FF6B2B; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: #555;
+    }
+    .status.connected { color: #62EA44; }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #555;
+    }
+    .status.connected .status-dot {
+      background: #62EA44;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .btn {
+      background: #62EA44;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.35rem 0.85rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn:hover { background: #7fff5a; }
+    .btn.disconnect { background: #ef4444; color: white; }
+
+    .radar-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1.5rem;
+      background: #111;
+      border-top: 1px solid #1a3a1a;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .info-label { color: #555; }
+    .info-value { color: #62EA44; font-weight: 600; }
+    .info-value.warning { color: #ef4444; }
+
+    .powered {
+      font-size: 0.6rem;
+      color: #333;
+      position: absolute;
+      bottom: 40px;
+      right: 12px;
+    }
+    .powered a { color: #00BFA6; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title">Kidnovator <span>Radar</span></div>
+  <div class="controls">
+    <div class="status" id="status">
+      <div class="status-dot"></div>
+      <span id="statusText">Disconnected</span>
+    </div>
+    <button class="btn" id="connectBtn" onclick="toggleConnection()">Connect Arduino</button>
+  </div>
+</header>
+
+<div class="radar-container">
+  <canvas id="radar"></canvas>
+</div>
+
+<div class="info-bar">
+  <div class="info-item">
+    <span class="info-label">Angle:</span>
+    <span class="info-value" id="angleVal">--</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Distance:</span>
+    <span class="info-value" id="distVal">--</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Object:</span>
+    <span class="info-value" id="objVal">--</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Sweep:</span>
+    <span class="info-value" id="sweepVal">--</span>
+  </div>
+</div>
+
+<div class="powered">Powered by <a href="https://neurogridlabs.tech">neurogridlabs.tech</a></div>
+
+<script>
+let port = null;
+let reader = null;
+let currentAngle = 0;
+let currentDistance = 0;
+let sweepDirection = "→";
+let dataBuffer = "";
+
+const detections = new Array(181).fill(0);
+const fadeTrail = new Array(181).fill(0);
+
+const canvas = document.getElementById("radar");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+  const container = canvas.parentElement;
+  const size = Math.min(container.clientWidth - 40, (container.clientHeight - 20) * 2);
+  canvas.width = size;
+  canvas.height = size / 2 + 60;
+}
+resizeCanvas();
+window.addEventListener("resize", () => { resizeCanvas(); });
+
+async function toggleConnection() {
+  if (port) {
+    await disconnectArduino();
+  } else {
+    await connectArduino();
+  }
+}
+
+async function connectArduino() {
+  if (!("serial" in navigator)) {
+    alert("Web Serial not supported. Use Chrome or Edge.");
+    return;
+  }
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
+
+    document.getElementById("status").classList.add("connected");
+    document.getElementById("statusText").textContent = "Connected";
+    document.getElementById("connectBtn").textContent = "Disconnect";
+    document.getElementById("connectBtn").classList.add("disconnect");
+
+    readSerial();
+  } catch (err) {
+    if (err.name !== "NotFoundError") alert("Connection failed: " + err.message);
+  }
+}
+
+async function disconnectArduino() {
+  try {
+    if (reader) { await reader.cancel(); reader = null; }
+    if (port) { await port.close(); port = null; }
+  } catch (e) {}
+
+  document.getElementById("status").classList.remove("connected");
+  document.getElementById("statusText").textContent = "Disconnected";
+  document.getElementById("connectBtn").textContent = "Connect Arduino";
+  document.getElementById("connectBtn").classList.remove("disconnect");
+}
+
+async function readSerial() {
+  const decoder = new TextDecoderStream();
+  port.readable.pipeTo(decoder.writable);
+  reader = decoder.readable.getReader();
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (value) parseData(value);
+    }
+  } catch (err) {
+    if (err.name !== "TypeError") console.error(err);
+  }
+}
+
+function parseData(chunk) {
+  dataBuffer += chunk;
+
+  let dotIdx;
+  while ((dotIdx = dataBuffer.indexOf(".")) !== -1) {
+    const packet = dataBuffer.substring(0, dotIdx);
+    dataBuffer = dataBuffer.substring(dotIdx + 1);
+
+    const commaIdx = packet.indexOf(",");
+    if (commaIdx === -1) continue;
+
+    const angle = parseInt(packet.substring(0, commaIdx).trim());
+    const distance = parseInt(packet.substring(commaIdx + 1).trim());
+
+    if (isNaN(angle) || isNaN(distance)) continue;
+    if (angle < 0 || angle > 180) continue;
+
+    currentAngle = angle;
+    currentDistance = distance;
+    detections[angle] = distance;
+    sweepDirection = angle > 90 ? "→" : "←";
+
+    for (let i = 0; i < 181; i++) {
+      if (fadeTrail[i] > 0) fadeTrail[i] -= 2;
+    }
+    fadeTrail[angle] = 255;
+
+    document.getElementById("angleVal").textContent = angle + "°";
+    document.getElementById("distVal").textContent = distance + " cm";
+    document.getElementById("objVal").textContent = distance < 40 ? "DETECTED" : "Clear";
+    document.getElementById("objVal").className = distance < 40 ? "info-value warning" : "info-value";
+    document.getElementById("sweepVal").textContent = sweepDirection;
+  }
+}
+
+function drawRadar() {
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h - 30;
+  const maxR = Math.min(cx - 10, cy - 10);
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Background glow
+  const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+  bgGrad.addColorStop(0, "rgba(98,234,68,0.03)");
+  bgGrad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Arc rings
+  ctx.strokeStyle = "rgba(98,234,68,0.2)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 4; i++) {
+    const r = (maxR / 4) * i;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, Math.PI, 0);
+    ctx.stroke();
+  }
+
+  // Distance labels
+  ctx.fillStyle = "rgba(98,234,68,0.4)";
+  ctx.font = "11px 'Fira Code', monospace";
+  ctx.textAlign = "center";
+  for (let i = 1; i <= 4; i++) {
+    const r = (maxR / 4) * i;
+    ctx.fillText((i * 10) + "cm", cx + r + 2, cy + 14);
+  }
+
+  // Angle lines
+  ctx.strokeStyle = "rgba(98,234,68,0.15)";
+  ctx.lineWidth = 1;
+  for (let a = 0; a <= 180; a += 30) {
+    const rad = a * Math.PI / 180;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + maxR * Math.cos(Math.PI - rad), cy - maxR * Math.sin(rad));
+    ctx.stroke();
+
+    // Angle labels
+    const lx = cx + (maxR + 18) * Math.cos(Math.PI - rad);
+    const ly = cy - (maxR + 18) * Math.sin(rad);
+    ctx.fillStyle = "rgba(98,234,68,0.5)";
+    ctx.fillText(a + "°", lx, ly);
+  }
+
+  // Fade trail (green glow behind sweep)
+  for (let a = 0; a < 181; a++) {
+    if (fadeTrail[a] <= 0) continue;
+    const alpha = fadeTrail[a] / 255;
+    const rad = a * Math.PI / 180;
+    ctx.strokeStyle = `rgba(98,234,68,${alpha * 0.3})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + maxR * Math.cos(Math.PI - rad), cy - maxR * Math.sin(rad));
+    ctx.stroke();
+  }
+
+  // Detected objects (red dots)
+  for (let a = 0; a < 181; a++) {
+    const d = detections[a];
+    if (d <= 0 || d >= 40) continue;
+    if (fadeTrail[a] <= 10) continue;
+
+    const alpha = fadeTrail[a] / 255;
+    const rad = a * Math.PI / 180;
+    const r = (d / 40) * maxR;
+    const ox = cx + r * Math.cos(Math.PI - rad);
+    const oy = cy - r * Math.sin(rad);
+
+    // Red glow
+    ctx.fillStyle = `rgba(255,50,50,${alpha * 0.8})`;
+    ctx.beginPath();
+    ctx.arc(ox, oy, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Red line from object to edge
+    ctx.strokeStyle = `rgba(255,50,50,${alpha * 0.5})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    ctx.lineTo(cx + maxR * Math.cos(Math.PI - rad), cy - maxR * Math.sin(rad));
+    ctx.stroke();
+  }
+
+  // Sweep line (bright green)
+  const sweepRad = currentAngle * Math.PI / 180;
+  const grad = ctx.createLinearGradient(cx, cy,
+    cx + maxR * Math.cos(Math.PI - sweepRad),
+    cy - maxR * Math.sin(sweepRad));
+  grad.addColorStop(0, "rgba(98,234,68,0.8)");
+  grad.addColorStop(1, "rgba(98,234,68,0.2)");
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + maxR * Math.cos(Math.PI - sweepRad), cy - maxR * Math.sin(sweepRad));
+  ctx.stroke();
+
+  // Center dot
+  ctx.fillStyle = "#62EA44";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  requestAnimationFrame(drawRadar);
+}
+
+drawRadar();
+</script>
+
+</body>
+</html>
