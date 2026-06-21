@@ -3,6 +3,8 @@
   "rewrites": [
     { "source": "/api/generate", "destination": "/api/generate" },
     { "source": "/api/chat", "destination": "/api/chat" },
+    { "source": "/api/status", "destination": "/api/status" },
+    { "source": "/", "destination": "/public/index.html" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ]
 }
