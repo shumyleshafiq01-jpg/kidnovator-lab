@@ -234,6 +234,16 @@
       <span id="motorLabel">Motor ON</span>
     </button>
   </div>
+
+  <div class="divider"></div>
+
+  <div class="toolbar-group">
+    <span class="toolbar-label">Speed:</span>
+    <button class="range-btn" onclick="setSpeed(1, this)">Slow</button>
+    <button class="range-btn active" onclick="setSpeed(2, this)">Normal</button>
+    <button class="range-btn" onclick="setSpeed(3, this)">Fast</button>
+    <button class="range-btn" onclick="setSpeed(4, this)">Max</button>
+  </div>
 </div>
 
 <div class="radar-container">
@@ -260,6 +270,10 @@
   <div class="info-item">
     <span class="info-label">Range:</span>
     <span class="info-value" id="rangeVal">100cm</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Speed:</span>
+    <span class="info-value" id="speedVal">Normal</span>
   </div>
 </div>
 
@@ -300,6 +314,15 @@ function setRange(val) {
   document.querySelectorAll(".range-btn").forEach(b => {
     b.classList.toggle("active", parseInt(b.textContent) === val);
   });
+}
+
+// ── Speed selector ──
+function setSpeed(level, btn) {
+  sendCommand("S" + level);
+  document.querySelectorAll(".toolbar-group:last-child .range-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const names = { 1: "Slow", 2: "Normal", 3: "Fast", 4: "Max" };
+  document.getElementById("speedVal").textContent = names[level];
 }
 
 // ── Radar start/stop ──
