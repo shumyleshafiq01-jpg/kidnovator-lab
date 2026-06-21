@@ -1,4 +1,5 @@
 {
+  "installCommand": "npm install --omit=dev",
   "rewrites": [
     { "source": "/api/generate", "destination": "/api/generate" },
     { "source": "/api/chat", "destination": "/api/chat" },

@@ -2,7 +2,7 @@
   "name": "kidnovator-code-gen",
   "version": "1.0.0",
   "description": "AI-powered Arduino code generator for Kidnovators Kit",
-  "main": "electron.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
