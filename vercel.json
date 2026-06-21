@@ -5,6 +5,6 @@
     { "source": "/api/chat", "destination": "/api/chat" },
     { "source": "/api/status", "destination": "/api/status" },
     { "source": "/", "destination": "/public/index.html" },
-    { "source": "/(.*)", "destination": "/public/$1" }
+    { "source": "/:path*", "destination": "/public/:path*" }
   ]
 }
