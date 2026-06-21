@@ -1,9 +1,11 @@
 {
+  "framework": null,
   "installCommand": "npm install --omit=dev",
+  "buildCommand": "",
   "outputDirectory": "public",
-  "rewrites": [
-    { "source": "/api/generate", "destination": "/api/generate" },
-    { "source": "/api/chat", "destination": "/api/chat" },
-    { "source": "/api/status", "destination": "/api/status" }
-  ]
+  "functions": {
+    "api/*.js": {
+      "memory": 256
+    }
+  }
 }
