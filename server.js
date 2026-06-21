@@ -432,8 +432,9 @@ app.get("/api/status", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-const serverInstance = app.listen(PORT, () => {
-  console.log(`Robotics for Kids running at http://localhost:${PORT}`);
-});
-
-module.exports = serverInstance;
+if (!process.env.VERCEL) {
+  const serverInstance = app.listen(PORT, () => {
+    console.log(`Robotics for Kids running at http://localhost:${PORT}`);
+  });
+  module.exports = serverInstance;
+}
