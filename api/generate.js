@@ -3,7 +3,7 @@ const Anthropic = require("@anthropic-ai/sdk");
 const DEMO_PROJECTS = {
   default: {
     title: "Automatic Night Light",
-    code: `// Automatic Night Light - Kidnovators Kit
+    code: `// Automatic Night Light - AI and Robotics for Kids Kit
 // Uses LDR sensor to detect darkness and turn on LED
 
 int ldrPin = A0;    // LDR sensor connected to analog pin A0
@@ -44,7 +44,7 @@ void loop() {
   },
   parking: {
     title: "Smart Parking Sensor with Buzzer",
-    code: `// Smart Parking Sensor - Kidnovators Kit
+    code: `// Smart Parking Sensor - AI and Robotics for Kids Kit
 // Buzzer beeps faster as object gets closer
 
 int trigPin = 2;
@@ -108,7 +108,7 @@ void loop() {
   },
   water: {
     title: "Water Level Alert System",
-    code: `// Water Level Alert - Kidnovators Kit
+    code: `// Water Level Alert - AI and Robotics for Kids Kit
 // LEDs show water level, buzzer warns when high
 
 int waterPin = A1;
@@ -166,7 +166,7 @@ void loop() {
   },
   traffic: {
     title: "Traffic Light Sequence",
-    code: `// Traffic Light Sequence - Kidnovators Kit
+    code: `// Traffic Light Sequence - AI and Robotics for Kids Kit
 // Red, Yellow, Green LEDs cycle like a real traffic light
 
 int redPin = 4;
@@ -212,7 +212,7 @@ void loop() {
   },
   door: {
     title: "Automatic Door with Servo",
-    code: `// Automatic Door - Kidnovators Kit
+    code: `// Automatic Door - AI and Robotics for Kids Kit
 // Servo opens door when ultrasonic detects someone nearby
 
 #include <Servo.h>
@@ -272,7 +272,7 @@ void loop() {
   },
   rain: {
     title: "Rain Detector Alarm",
-    code: `// Rain Detector Alarm - Kidnovators Kit
+    code: `// Rain Detector Alarm - AI and Robotics for Kids Kit
 // Water sensor detects rain, buzzer and LED alert you
 
 int waterPin = A1;

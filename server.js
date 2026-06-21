@@ -3,6 +3,7 @@ const Anthropic = require("@anthropic-ai/sdk");
 const path = require("path");
 const fs = require("fs");
 const { execFile } = require("child_process");
+const http = require("http");
 require("dotenv").config();
 
 const ARDUINO_CLI = path.join(__dirname, "tools", "arduino-cli.exe");
@@ -15,6 +16,55 @@ const apiKey = process.env.ANTHROPIC_API_KEY;
 const hasApi = apiKey && apiKey !== "your-api-key-here";
 const anthropic = hasApi ? new Anthropic() : null;
 
+async function checkOllama() {
+  return new Promise((resolve) => {
+    http.get("http://127.0.0.1:11434/api/tags", (res) => {
+      let data = "";
+      res.on("data", (c) => (data += c));
+      res.on("end", () => {
+        try {
+          const parsed = JSON.parse(data);
+          const models = (parsed.models || []).map((m) => m.name);
+          resolve(models.length > 0 ? models[0] : null);
+        } catch { resolve(null); }
+      });
+    }).on("error", () => resolve(null));
+  });
+}
+
+async function ollamaGenerate(prompt, system) {
+  const model = await checkOllama();
+  if (!model) return null;
+
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model,
+      prompt,
+      system,
+      stream: false,
+    });
+
+    const req = http.request(
+      { hostname: "127.0.0.1", port: 11434, path: "/api/generate", method: "POST",
+        headers: { "Content-Type": "application/json" } },
+      (res) => {
+        let data = "";
+        res.on("data", (c) => (data += c));
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            resolve(parsed.response || null);
+          } catch { resolve(null); }
+        });
+      }
+    );
+    req.on("error", () => resolve(null));
+    req.setTimeout(120000, () => { req.destroy(); resolve(null); });
+    req.write(body);
+    req.end();
+  });
+}
+
 if (!hasApi) {
   console.log("No API key found — running in DEMO MODE. Code generation will use sample responses.");
 }
@@ -22,7 +72,7 @@ if (!hasApi) {
 const DEMO_PROJECTS = {
   default: {
     title: "Automatic Night Light",
-    code: `// Automatic Night Light - Kidnovators Kit
+    code: `// Automatic Night Light - AI and Robotics for Kids Kit
 // Uses LDR sensor to detect darkness and turn on LED
 
 int ldrPin = A0;    // LDR sensor connected to analog pin A0
@@ -65,7 +115,7 @@ void loop() {
   },
   parking: {
     title: "Smart Parking Sensor with Buzzer",
-    code: `// Smart Parking Sensor - Kidnovators Kit
+    code: `// Smart Parking Sensor - AI and Robotics for Kids Kit
 // Buzzer beeps faster as object gets closer
 
 int trigPin = 2;
@@ -129,7 +179,7 @@ void loop() {
   },
   water: {
     title: "Water Level Alert System",
-    code: `// Water Level Alert - Kidnovators Kit
+    code: `// Water Level Alert - AI and Robotics for Kids Kit
 // LEDs show water level, buzzer warns when high
 
 int waterPin = A1;
@@ -232,6 +282,15 @@ app.post("/api/generate", async (req, res) => {
   }
 
   if (!hasApi) {
+    const ollamaResult = await ollamaGenerate(prompt, SYSTEM_PROMPT);
+    if (ollamaResult) {
+      try {
+        let parsed;
+        try { parsed = JSON.parse(ollamaResult); }
+        catch { const m = ollamaResult.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); }
+        if (parsed && parsed.code) return res.json(parsed);
+      } catch {}
+    }
     await new Promise(r => setTimeout(r, 1200));
     return res.json(getDemoResponse(prompt));
   }
@@ -275,6 +334,10 @@ app.post("/api/chat", async (req, res) => {
     const messages = (history || []).concat([{ role: "user", content: message }]);
 
     if (!hasApi) {
+      const chatSystem = `You are a friendly Arduino tutor for kids aged 8-14 using the Kidnovators AI & Robotics Kit. The kit has: Arduino Uno, Breadboard, LEDs (Red/Green/Yellow), Buzzer, Servo Motor, Ultrasonic Distance Sensor, Water Level Sensor, LDR (Photoresistor), Resistors (220Ω, 470Ω, 10kΩ), Jumper Wires, 9V Battery. Answer questions simply. Keep answers short and encouraging.`;
+      const ollamaReply = await ollamaGenerate(message, chatSystem);
+      if (ollamaReply) return res.json({ reply: ollamaReply });
+
       const p = message.toLowerCase();
       let reply = "Great question! I'm running in demo mode right now so I can't give a custom answer. Add your API key to the .env file to unlock the full AI tutor!";
       if (p.includes("ldr") || p.includes("light")) reply = "The LDR (Light Dependent Resistor) is like a tiny eye that can tell if it's bright or dark! When light shines on it, electricity flows easily. When it's dark, it blocks the electricity. Connect one leg to 5V and the other to pin A0 with a 10kΩ resistor to GND. The Arduino reads the light level as a number between 0 (dark) and 1023 (very bright)!";
@@ -359,7 +422,18 @@ app.post("/api/upload", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Kidnovator Code Generator running at http://localhost:${PORT}`);
+app.get("/api/status", async (req, res) => {
+  const ollamaModel = await checkOllama();
+  res.json({
+    api: hasApi ? "anthropic" : ollamaModel ? "ollama" : "demo",
+    ollamaModel: ollamaModel || null,
+    mode: hasApi ? "Cloud AI (Claude)" : ollamaModel ? `Offline AI (${ollamaModel})` : "Demo Mode",
+  });
 });
+
+const PORT = process.env.PORT || 3000;
+const serverInstance = app.listen(PORT, () => {
+  console.log(`AI and Robotics for Kids running at http://localhost:${PORT}`);
+});
+
+module.exports = serverInstance;

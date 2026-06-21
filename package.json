@@ -2,14 +2,44 @@
   "name": "kidnovator-code-gen",
   "version": "1.0.0",
   "description": "AI-powered Arduino code generator for Kidnovators Kit",
-  "main": "server.js",
+  "main": "electron.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "desktop": "electron .",
+    "build": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.kidnovator.lab",
+    "productName": "Kidnovator Lab",
+    "files": [
+      "**/*",
+      "!tools/**",
+      "!temp_sketch/**",
+      "!test_sketch/**",
+      "!servo_test/**",
+      "!radar_sketch/**"
+    ],
+    "extraResources": [
+      {
+        "from": "tools",
+        "to": "tools",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": ["portable"],
+      "icon": "public/favicon.ico"
+    }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
     "express": "^4.21.0",
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0"
   }
 }
