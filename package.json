@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "desktop": "electron .",
-    "build": "electron-builder --win portable",
+    "build:desktop": "electron-builder --win portable",
     "build:installer": "electron-builder --win nsis"
   },
   "build": {
