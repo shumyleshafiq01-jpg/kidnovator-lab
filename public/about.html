@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robotics for Kids - About</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --orange: #FF6B2B;
+      --navy: #1B2A4A;
+      --navy-light: #243660;
+      --teal: #00BFA6;
+      --white: #FFFFFF;
+      --g100: #F1F5F9;
+      --g500: #64748B;
+      --g800: #1E293B;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--white);
+      color: var(--g800);
+      line-height: 1.7;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      color: var(--white);
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.3rem;
+    }
+
+    header h1 span { color: var(--orange); }
+
+    header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 1rem;
+      background: var(--g100);
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    nav a {
+      color: var(--navy);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    nav a:hover { background: var(--navy); color: var(--white); }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 3px solid var(--orange);
+      display: inline-block;
+    }
+
+    h2:first-of-type { margin-top: 0; }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    p { margin-bottom: 1rem; color: #334155; }
+
+    .highlight {
+      background: linear-gradient(135deg, #FFF7ED, #FEF3C7);
+      border-left: 4px solid var(--orange);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+      font-weight: 500;
+    }
+
+    ul, ol {
+      margin: 0.75rem 0 1.25rem 1.5rem;
+      color: #334155;
+    }
+
+    li { margin-bottom: 0.5rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+
+    .card {
+      background: var(--g100);
+      border-radius: 10px;
+      padding: 1.25rem;
+      border: 1px solid #E2E8F0;
+    }
+
+    .card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 0.4rem;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      margin: 0;
+      color: var(--g500);
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--teal);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+
+    .cta {
+      background: linear-gradient(135deg, var(--orange), #E85D1A);
+      color: white;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      border-radius: 12px;
+      margin: 2.5rem 0;
+    }
+
+    .cta h2 { color: white; border-bottom-color: rgba(255,255,255,0.3); margin-top: 0; }
+    .cta p { color: rgba(255,255,255,0.9); }
+
+    .cta a {
+      display: inline-block;
+      background: white;
+      color: var(--orange);
+      font-weight: 700;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      transition: transform 0.2s;
+    }
+
+    .cta a:hover { transform: scale(1.05); }
+
+    .kit-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
+      list-style: none;
+      padding: 0;
+    }
+
+    .kit-list li {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .kit-list li::before { content: "✓ "; color: var(--teal); font-weight: 700; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--navy);
+      color: rgba(255,255,255,0.5);
+      font-size: 0.8rem;
+    }
+
+    footer a { color: var(--teal); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.6rem; }
+      .container { padding: 1.5rem 1rem; }
+      nav { flex-wrap: wrap; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Robotics <span>for Kids</span></h1>
+  <p>Hands-on STEM education powered by real hardware and AI</p>
+</header>
+
+<nav>
+  <a href="/">Lab Dashboard</a>
+  <a href="/radar.html">Radar</a>
+  <a href="/about.html">About</a>
+  <a href="https://neurogridlabs.tech" target="_blank">Contact</a>
+</nav>
+
+<div class="container">
+
+  <h2>What We Do</h2>
+  <p>Robotics for Kids is a hands-on STEM education platform that teaches children aged 8 to 16 how to build real electronic circuits, write code, and understand the technology that powers the world around them. No prior experience needed.</p>
+
+  <div class="highlight">
+    We don't teach kids to drag blocks on a screen. We teach them to build real circuits with real components, write real code, and solve real problems. Every student leaves with something they built with their own hands.
+  </div>
+
+  <p>Our platform combines a physical robotics kit with an AI-powered web application. Students describe what they want to build in plain English, and the system generates working Arduino code, step-by-step wiring instructions, and clear explanations they can actually understand. Then they build it, upload it, and watch it come to life.</p>
+
+  <h2>What We Teach</h2>
+
+  <h3>Core Skills</h3>
+  <ul>
+    <li><strong>Circuit Building</strong> — reading schematics, using breadboards, understanding components, and wiring real circuits by hand</li>
+    <li><strong>Programming</strong> — writing Arduino C/C++ code, understanding variables, loops, conditionals, functions, and sensor input/output</li>
+    <li><strong>Electronics Fundamentals</strong> — voltage, current, resistance, Ohm's law, digital vs analog signals, PWM</li>
+    <li><strong>Sensor Technology</strong> — how ultrasonic, light, water, and temperature sensors work and how to read their data</li>
+    <li><strong>Actuators &amp; Output</strong> — controlling LEDs, buzzers, servo motors, and understanding how code becomes physical motion</li>
+    <li><strong>Problem Solving</strong> — debugging circuits, reading serial output, iterating on designs, and thinking like an engineer</li>
+  </ul>
+
+  <h3>Projects Students Build</h3>
+  <div class="grid">
+    <div class="card">
+      <div class="badge">Beginner</div>
+      <h4>Automatic Night Light</h4>
+      <p>LDR sensor detects darkness and turns on an LED automatically</p>
+    </div>
+    <div class="card">
+      <div class="badge">Beginner</div>
+      <h4>Traffic Light Sequence</h4>
+      <p>Program red, yellow, green LEDs to cycle like a real traffic signal</p>
+    </div>
+    <div class="card">
+      <div class="badge">Intermediate</div>
+      <h4>Smart Parking Sensor</h4>
+      <p>Ultrasonic sensor measures distance, buzzer beeps faster as objects get closer</p>
+    </div>
+    <div class="card">
+      <div class="badge">Intermediate</div>
+      <h4>Water Level Alert</h4>
+      <p>Water sensor triggers LED indicators and buzzer alarm at high levels</p>
+    </div>
+    <div class="card">
+      <div class="badge">Intermediate</div>
+      <h4>Automatic Door System</h4>
+      <p>Servo motor opens a door when the ultrasonic sensor detects a person</p>
+    </div>
+    <div class="card">
+      <div class="badge">Advanced</div>
+      <h4>Radar / Sonar Scanner</h4>
+      <p>Servo sweeps an ultrasonic sensor 180° with live radar visualization in the browser</p>
+    </div>
+  </div>
+
+  <p>These are just the starting projects. Students can describe any idea in plain English and the AI generates the code and wiring for it — encouraging creativity and experimentation beyond the curriculum.</p>
+
+  <h2>The Kit</h2>
+  <p>Every student works with a physical hardware kit containing real, industry-standard components:</p>
+
+  <ul class="kit-list">
+    <li>Arduino Uno Microcontroller</li>
+    <li>Solderless Breadboard</li>
+    <li>Ultrasonic Distance Sensor</li>
+    <li>LDR (Light Sensor)</li>
+    <li>Water Level Sensor</li>
+    <li>Servo Motor (180°)</li>
+    <li>LEDs (Red, Green, Yellow)</li>
+    <li>Piezo Buzzer</li>
+    <li>Resistors (220Ω, 470Ω, 10kΩ)</li>
+    <li>Jumper Wires (M-M, M-F)</li>
+    <li>USB Cable</li>
+    <li>9V Battery + Connector</li>
+  </ul>
+
+  <h2>The Platform</h2>
+  <p>Our web-based lab gives students everything they need in one place:</p>
+
+  <ul>
+    <li><strong>AI Code Generator</strong> — describe what you want to build, get working Arduino code with wiring instructions</li>
+    <li><strong>Direct Upload</strong> — compile and upload code to Arduino straight from the browser, no IDE needed</li>
+    <li><strong>Serial Monitor</strong> — see real-time sensor data from the Arduino in the browser</li>
+    <li><strong>AI Chat Tutor</strong> — ask questions about electronics, components, or code and get kid-friendly explanations</li>
+    <li><strong>Radar Visualization</strong> — live sonar display for the radar project with distance, speed, and motor controls</li>
+    <li><strong>Offline Desktop App</strong> — works without internet using local AI, perfect for classrooms with limited connectivity</li>
+  </ul>
+
+  <h2>Who This Is For</h2>
+  <ul>
+    <li><strong>Kids aged 8–16</strong> who are curious about how technology works</li>
+    <li><strong>Parents</strong> looking for hands-on STEM activities beyond screen time</li>
+    <li><strong>Schools &amp; after-school programs</strong> that want a ready-to-go robotics curriculum</li>
+    <li><strong>Tutors &amp; educators</strong> who want to teach electronics and coding with real hardware</li>
+    <li><strong>Makerspaces &amp; STEM camps</strong> that need structured yet flexible project kits</li>
+  </ul>
+
+  <h2>Why It Works</h2>
+  <ol>
+    <li><strong>Real hardware, real results.</strong> Students hold the circuit they built. They see the LED turn on. They hear the buzzer. Learning is physical and immediate.</li>
+    <li><strong>AI removes the blank-page problem.</strong> Instead of staring at an empty IDE, students describe their idea and get working code. They learn by reading, modifying, and experimenting — not by memorizing syntax.</li>
+    <li><strong>No setup friction.</strong> No installing Arduino IDE, no driver issues, no library conflicts. Open the browser, connect the Arduino, and start building.</li>
+    <li><strong>Scales from 1 student to 100.</strong> The same platform works for a parent at home, a tutor with 5 students, or a school running 30 kits at once.</li>
+  </ol>
+
+  <div class="cta">
+    <h2>Get Started</h2>
+    <p>Ready to bring robotics education to your students, classroom, or home? We offer kits, tutoring sessions, school programs, and curriculum licensing.</p>
+    <a href="https://neurogridlabs.tech" target="_blank">Contact Us at Neurogridlabs.tech</a>
+  </div>
+
+</div>
+
+<footer>
+  <p>Robotics for Kids — A <a href="https://neurogridlabs.tech" target="_blank">Neurogridlabs.tech</a> Initiative</p>
+  <p style="margin-top: 0.5rem;">For technical support, partnerships, and inquiries: <a href="https://neurogridlabs.tech" target="_blank">neurogridlabs.tech</a></p>
+</footer>
+
+</body>
+</html>
