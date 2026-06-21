@@ -37,7 +37,7 @@
     .controls {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
     }
 
     .status {
@@ -49,8 +49,7 @@
     }
     .status.connected { color: #62EA44; }
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       background: #555;
     }
@@ -73,6 +72,90 @@
     }
     .btn:hover { background: #7fff5a; }
     .btn.disconnect { background: #ef4444; color: white; }
+    .btn.stop { background: #ef4444; color: white; }
+    .btn.paused { background: #eab308; color: #0a0a0a; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.5rem 1.5rem;
+      background: #111;
+      border-bottom: 1px solid #1a3a1a;
+      flex-shrink: 0;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .toolbar-label {
+      font-size: 0.7rem;
+      color: #555;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 0.2rem;
+    }
+
+    .range-btn {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #888;
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .range-btn:hover { border-color: #62EA44; color: #62EA44; }
+    .range-btn.active {
+      background: #62EA44;
+      color: #0a0a0a;
+      border-color: #62EA44;
+    }
+
+    .divider {
+      width: 1px;
+      height: 20px;
+      background: #333;
+    }
+
+    .ctrl-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #888;
+      border-radius: 4px;
+      padding: 0.25rem 0.7rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ctrl-btn:hover { border-color: #62EA44; color: #62EA44; }
+    .ctrl-btn.active {
+      background: #62EA44;
+      color: #0a0a0a;
+      border-color: #62EA44;
+    }
+    .ctrl-btn.stopped {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
+    .ctrl-icon {
+      font-size: 0.8rem;
+    }
 
     .radar-container {
       flex: 1;
@@ -82,9 +165,7 @@
       position: relative;
     }
 
-    canvas {
-      display: block;
-    }
+    canvas { display: block; }
 
     .info-bar {
       display: flex;
@@ -129,6 +210,32 @@
   </div>
 </header>
 
+<div class="toolbar">
+  <div class="toolbar-group">
+    <span class="toolbar-label">Range:</span>
+    <button class="range-btn" onclick="setRange(40)">40cm</button>
+    <button class="range-btn active" onclick="setRange(100)">100cm</button>
+    <button class="range-btn" onclick="setRange(150)">150cm</button>
+    <button class="range-btn" onclick="setRange(200)">200cm</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="toolbar-group">
+    <button class="ctrl-btn active" id="radarBtn" onclick="toggleRadar()">
+      <span class="ctrl-icon" id="radarIcon">&#9210;</span>
+      <span id="radarLabel">Radar ON</span>
+    </button>
+  </div>
+
+  <div class="toolbar-group">
+    <button class="ctrl-btn active" id="motorBtn" onclick="toggleMotor()">
+      <span class="ctrl-icon" id="motorIcon">&#9881;</span>
+      <span id="motorLabel">Motor ON</span>
+    </button>
+  </div>
+</div>
+
 <div class="radar-container">
   <canvas id="radar"></canvas>
 </div>
@@ -150,6 +257,10 @@
     <span class="info-label">Sweep:</span>
     <span class="info-value" id="sweepVal">--</span>
   </div>
+  <div class="info-item">
+    <span class="info-label">Range:</span>
+    <span class="info-value" id="rangeVal">100cm</span>
+  </div>
 </div>
 
 <div class="powered">Powered by <a href="https://neurogridlabs.tech">neurogridlabs.tech</a></div>
@@ -157,12 +268,16 @@
 <script>
 let port = null;
 let reader = null;
+let writer = null;
 let currentAngle = 0;
 let currentDistance = 0;
-let sweepDirection = "→";
+let sweepDirection = "---";
 let dataBuffer = "";
 
-const MAX_RANGE = 200;
+let MAX_RANGE = 100;
+let radarActive = true;
+let motorActive = true;
+
 const detections = new Array(181).fill(0);
 const fadeTrail = new Array(181).fill(0);
 
@@ -176,8 +291,60 @@ function resizeCanvas() {
   canvas.height = size / 2 + 60;
 }
 resizeCanvas();
-window.addEventListener("resize", () => { resizeCanvas(); });
+window.addEventListener("resize", resizeCanvas);
 
+// ── Range selector ──
+function setRange(val) {
+  MAX_RANGE = val;
+  document.getElementById("rangeVal").textContent = val + "cm";
+  document.querySelectorAll(".range-btn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.textContent) === val);
+  });
+}
+
+// ── Radar start/stop ──
+function toggleRadar() {
+  radarActive = !radarActive;
+  const btn = document.getElementById("radarBtn");
+  const label = document.getElementById("radarLabel");
+  const icon = document.getElementById("radarIcon");
+  if (radarActive) {
+    btn.className = "ctrl-btn active";
+    label.textContent = "Radar ON";
+  } else {
+    btn.className = "ctrl-btn stopped";
+    label.textContent = "Radar OFF";
+    // Clear detections
+    detections.fill(0);
+    fadeTrail.fill(0);
+  }
+}
+
+// ── Motor start/stop (sends serial command) ──
+function toggleMotor() {
+  motorActive = !motorActive;
+  const btn = document.getElementById("motorBtn");
+  const label = document.getElementById("motorLabel");
+  if (motorActive) {
+    btn.className = "ctrl-btn active";
+    label.textContent = "Motor ON";
+    sendCommand("M1");
+  } else {
+    btn.className = "ctrl-btn stopped";
+    label.textContent = "Motor OFF";
+    sendCommand("M0");
+  }
+}
+
+async function sendCommand(cmd) {
+  if (!writer) return;
+  try {
+    const encoder = new TextEncoder();
+    await writer.write(encoder.encode(cmd + "\n"));
+  } catch (e) {}
+}
+
+// ── Serial connection ──
 async function toggleConnection() {
   if (port) {
     await disconnectArduino();
@@ -195,6 +362,8 @@ async function connectArduino() {
     port = await navigator.serial.requestPort();
     await port.open({ baudRate: 9600 });
 
+    writer = port.writable.getWriter();
+
     document.getElementById("status").classList.add("connected");
     document.getElementById("statusText").textContent = "Connected";
     document.getElementById("connectBtn").textContent = "Disconnect";
@@ -209,6 +378,7 @@ async function connectArduino() {
 async function disconnectArduino() {
   try {
     if (reader) { await reader.cancel(); reader = null; }
+    if (writer) { writer.releaseLock(); writer = null; }
     if (port) { await port.close(); port = null; }
   } catch (e) {}
 
@@ -227,7 +397,7 @@ async function readSerial() {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      if (value) parseData(value);
+      if (value && radarActive) parseData(value);
     }
   } catch (err) {
     if (err.name !== "TypeError") console.error(err);
@@ -254,7 +424,7 @@ function parseData(chunk) {
     currentAngle = angle;
     currentDistance = distance;
     detections[angle] = distance;
-    sweepDirection = angle > 90 ? "→" : "←";
+    sweepDirection = angle > 90 ? "--->" : "<---";
 
     for (let i = 0; i < 181; i++) {
       if (fadeTrail[i] > 0) fadeTrail[i] -= 2;
@@ -269,6 +439,7 @@ function parseData(chunk) {
   }
 }
 
+// ── Radar drawing ──
 function drawRadar() {
   const w = canvas.width;
   const h = canvas.height;
@@ -277,6 +448,15 @@ function drawRadar() {
   const maxR = Math.min(cx - 10, cy - 10);
 
   ctx.clearRect(0, 0, w, h);
+
+  if (!radarActive) {
+    ctx.fillStyle = "rgba(255,50,50,0.15)";
+    ctx.font = "bold 24px Poppins, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("RADAR PAUSED", cx, h / 2);
+    requestAnimationFrame(drawRadar);
+    return;
+  }
 
   // Background glow
   const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
@@ -314,14 +494,13 @@ function drawRadar() {
     ctx.lineTo(cx + maxR * Math.cos(Math.PI - rad), cy - maxR * Math.sin(rad));
     ctx.stroke();
 
-    // Angle labels
     const lx = cx + (maxR + 18) * Math.cos(Math.PI - rad);
     const ly = cy - (maxR + 18) * Math.sin(rad);
     ctx.fillStyle = "rgba(98,234,68,0.5)";
     ctx.fillText(a + "°", lx, ly);
   }
 
-  // Fade trail (green glow behind sweep)
+  // Fade trail
   for (let a = 0; a < 181; a++) {
     if (fadeTrail[a] <= 0) continue;
     const alpha = fadeTrail[a] / 255;
@@ -334,7 +513,7 @@ function drawRadar() {
     ctx.stroke();
   }
 
-  // Detected objects (red dots)
+  // Detected objects
   for (let a = 0; a < 181; a++) {
     const d = detections[a];
     if (d <= 0 || d >= MAX_RANGE) continue;
@@ -346,13 +525,11 @@ function drawRadar() {
     const ox = cx + r * Math.cos(Math.PI - rad);
     const oy = cy - r * Math.sin(rad);
 
-    // Red glow
     ctx.fillStyle = `rgba(255,50,50,${alpha * 0.8})`;
     ctx.beginPath();
     ctx.arc(ox, oy, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Red line from object to edge
     ctx.strokeStyle = `rgba(255,50,50,${alpha * 0.5})`;
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -361,7 +538,7 @@ function drawRadar() {
     ctx.stroke();
   }
 
-  // Sweep line (bright green)
+  // Sweep line
   const sweepRad = currentAngle * Math.PI / 180;
   const grad = ctx.createLinearGradient(cx, cy,
     cx + maxR * Math.cos(Math.PI - sweepRad),
